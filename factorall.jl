@@ -1,6 +1,11 @@
 using Primes
 using OffsetArrays
 
+struct primePower
+    prime::Int
+    power::Int
+end
+
 function maxpow(n::Int, p::Int)
     pow = 1
     n /= p
@@ -61,6 +66,8 @@ function factorall(m,n)
     return dictlist
 end
 
+newfact = memoizeany(factorall)
+
 function domult(ndict, func)
     if isempty(ndict)
         return 1
@@ -69,7 +76,7 @@ function domult(ndict, func)
 end
 
 function doallmult(n, func)
-    return [domult(i, func) for i in factorall(n)]
+    return [domult(i, func) for i in newfact(n)]
 end
 
 function doallmult(m, n, func)
@@ -110,6 +117,21 @@ function sigk(p, n, k,thedict)
     thedict[(p, n)] = tmp
     return tmp
 end
+
+function memoizeany(func)
+    thedict = Dict()
+    return (a)-> memoizeanyaux(a, func, thedict)
+end
+
+function memoizeanyaux(a, func, thedict)
+    if haskey(thedict, a)
+        return thedict[a]
+    end
+    res = func(a)
+    thedict[a] =res
+    return res
+end
+
 function memoize( func)
     thedict = Dict((0, 0)=>0)
     return (p, n)-> memoizeaux(p, n, func, thedict)
