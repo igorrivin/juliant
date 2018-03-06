@@ -6,6 +6,20 @@ struct primePower
     power::Int
 end
 
+function memoizeany(func)
+    thedict = Dict()
+    return (a)-> memoizeanyaux(a, func, thedict)
+end
+
+function memoizeanyaux(a, func, thedict)
+    if haskey(thedict, a)
+        return thedict[a]
+    end
+    res = func(a)
+    thedict[a] =res
+    return res
+end
+
 function maxpow(n::Int, p::Int)
     pow = 1
     n /= p
@@ -66,7 +80,6 @@ function factorall(m,n)
     return dictlist
 end
 
-newfact = memoizeany(factorall)
 
 function domult(ndict, func)
     if isempty(ndict)
@@ -74,6 +87,8 @@ function domult(ndict, func)
     end
     return prod(func(i, ndict[i]) for i in keys(ndict))
 end
+
+newfact = memoizeany(factorall)
 
 function doallmult(n, func)
     return [domult(i, func) for i in newfact(n)]
@@ -87,7 +102,7 @@ end
 
 
 function makesigmab(k)
-    thedict = Dict((0, 0)=>0)
+    thedict = Dict((0, 0)=>BigInt(0))
     return (p, n) -> sigkb(p, n, k, thedict)
 end
 
@@ -104,7 +119,7 @@ function sigkb(p, n, k,thedict)
         return thedict[(p, n)]
     end
     bp = BigInt(p)
-    @inbounds tmp = sum(bp^(i*k) for i in 0:n)
+    tmp = sum(bp^(i*k) for i in 0:n)
     thedict[(p, n)] = tmp
     return tmp
 end
@@ -118,19 +133,6 @@ function sigk(p, n, k,thedict)
     return tmp
 end
 
-function memoizeany(func)
-    thedict = Dict()
-    return (a)-> memoizeanyaux(a, func, thedict)
-end
-
-function memoizeanyaux(a, func, thedict)
-    if haskey(thedict, a)
-        return thedict[a]
-    end
-    res = func(a)
-    thedict[a] =res
-    return res
-end
 
 function memoize( func)
     thedict = Dict((0, 0)=>0)
@@ -149,3 +151,11 @@ end
 mobius(p, n) = n==1?-1:0
 
 phifunc(p, n) = p^(n-1)*(p-1)
+
+function tally(xs)
+  freqs = Dict{eltype(xs),Int}()
+  for x in xs
+    freqs[x] = get(freqs, x, 0) + 1
+  end
+  return freqs
+end
